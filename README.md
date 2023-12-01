@@ -1,2 +1,2 @@
-# $H = PSP^\dagger$
-Hamiltonian Physics Simulation Package
+# $PSP^\dagger$
+Physics Simulation Package
