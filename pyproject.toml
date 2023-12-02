@@ -1,0 +1,25 @@
+[project]
+name = "psp"
+requires-python = ">=3.9"
+description = "Physical Simulation Package"
+version = "0.1.0"
+authors = [
+    { name = "Norman Hogan", email = "anhogan3@ncsu.edu" },
+    { name = "Alexander Kemper", email = "akemper@ncsu.edu" },
+    { name = "Arvin Kushwaha", email = "askushwa@ncsu.edu" },
+]
+dependencies = [
+    "numpy",
+]
+
+[project.optional-dependencies]
+dev = [
+    "tox",
+    "pre-commit",
+    "bump2version",
+]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
