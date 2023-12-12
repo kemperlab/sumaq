@@ -1,6 +1,7 @@
 [project]
 name = "psp"
-requires-python = ">=3.9"
+requires-python = ">=3.11"
+# requires-python = ">=3.9"
 description = "Physical Simulation Package"
 version = "0.1.0"
 authors = [
