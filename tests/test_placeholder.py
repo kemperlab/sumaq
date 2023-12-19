@@ -1,4 +1,5 @@
-import psp
+import sumaq
+
 
 def test_placeholder():
-    assert psp.placeholder_code(1, 1) == 2
+    assert sumaq.placeholder_code(1, 1) == 2
