@@ -263,7 +263,7 @@ def exp_conjugation(generators: list[tuple[int]] | tuple[int], angles: list[floa
         temp = {}
         for key in result:
             coefficient = temp[key]
-            string, sign, c = string_product(tuple(generators_array[i]), key)
+            string, sign, c = string_product(tuple(generators_array[i]), key)  # type: ignore
             # If the ith exponent commutes with string (key) in the Pauli sentence do nothing
             if c:
                 temp[key] = temp.get(key, 0) + coefficient
