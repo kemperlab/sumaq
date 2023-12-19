@@ -1,11 +1,11 @@
 # Python version 3.11.5
-# Created on December 15, 2023
+# Modified on December 18, 2023
 
 """
 Pauli Operations
 ----------------
 This module contains several useful operations on Pauli strings. The identity along with the three Pauli matrices are
-interchangeably referred to as (0, 1, 2, 3) or (_, X, Y, Z).
+interchangeably referred to as (0, 1, 2, 3) or (-, X, Y, Z).
 """
 
 ##### Imports #####
@@ -37,7 +37,6 @@ def product(sigma1: int, sigma2: int) -> int:
         0 gives the same matrix. The product of any two different non-identity matrices returns the third non-identity
         matrix
     """
-
     return (sigma1 + sigma2 * RULES[sigma1]) % 4
 
 
@@ -60,8 +59,7 @@ def signed_product(sigma1: int, sigma2: int) -> tuple[int, complex]:
         The sign of the product. If two non-identity matrices are multiplied, the sign will be +i if :math:`\sigma_1
         \sigma_2 = c \sigma_3` is a cyclic permutation of (X, Y, Z) and -i if it is not.
     """
-
-    return product(sigma1, sigma2), SIGN_RULES[sigma1, sigma2]
+    return product(sigma1, sigma2), complex(SIGN_RULES[sigma1, sigma2])
 
 
 def string_product(string1: tuple[int], string2: tuple[int]) -> tuple[tuple[int], complex, bool]:
@@ -84,7 +82,6 @@ def string_product(string1: tuple[int], string2: tuple[int]) -> tuple[tuple[int]
         commutator: bool
            True if the two strings commute and False otherwise.
     """
-
     # Consistency check
     if len(string1) != len(string2):
         raise Exception(f"Dimension mismatch ({len(string1)} and {len(string2)})")
@@ -100,23 +97,22 @@ def string_product(string1: tuple[int], string2: tuple[int]) -> tuple[tuple[int]
         return result, sign, False
 
 
-def mut_irr(n: int, x: float = np.pi) -> list[float]:
-    """Returns a list of n mutually irrational numbers. Takes the optional argument x irrational to build the set"""
-
-    y = x % 1
-    numbers = [y] * n
-
-    for i in range(1, n):
-        y = (x * y) % 1
-        numbers[i] = y
-
-    return numbers
+# def mut_irr(n: int, x: float = np.pi) -> list[float]:
+#     """Returns a list of n mutually irrational numbers. Takes the optional argument x irrational to build the set"""
+#     y = x % 1
+#     numbers = [y] * n
+#     for i in range(1, n):
+#         y = (x * y) % 1
+#         numbers[i] = y
+#
+#     return numbers
 
 
 def strings_to_dict(strings: list[tuple[int]] | tuple[int], coefficients: list[complex] | complex) -> dict[
     tuple[int], complex]:
     """
-    Returns a dictionary for a Pauli word with the Pauli strings as keys and their corresponding coefficients as values.
+    Returns a dictionary for a Pauli sentence with the Pauli strings as keys and their corresponding coefficients as
+    values.
 
     Parameters:
     -----------
@@ -128,16 +124,13 @@ def strings_to_dict(strings: list[tuple[int]] | tuple[int], coefficients: list[c
     Returns:
     --------
     dict[tuple[int], complex]:
-        The Pauli word as a dictionary.
+        The Pauli sentence as a dictionary.
     """
-
     # Data reformatting
     coefficients_array = np.array([coefficients]).flatten()
     strings_array = np.array([strings])
-
     if len(strings_array.shape) > 2:
         strings_array = np.squeeze(strings_array, axis=0)
-
     # Consistency check
     if len(strings_array) != len(coefficients_array):
         raise Exception(f"Length mismatch - strings: {len(strings_array)}, coefficients: {len(coefficients_array)}")
@@ -146,17 +139,17 @@ def strings_to_dict(strings: list[tuple[int]] | tuple[int], coefficients: list[c
     return dict(zip(strings_array, coefficients_array))
 
 
-def full_sum(word_dict1: dict[tuple[int], complex], word_dict2: dict[tuple[int], complex], tol: float = 0) -> dict[
+def full_sum(sentence1: dict[tuple[int], complex], sentence2: dict[tuple[int], complex], tol: float = 0) -> dict[
     tuple[int], complex]:
     """
-    Finds the sum of two Pauli words.
+    Finds the sum of two Pauli sentences.
 
     Parameters:
     -----------
-    word_dict1: dict[tuple[int], complex]
-        The first Pauli word.
-    word_dict2: dict[tuple[int], complex]
-        The second Pauli word.
+    sentence1: dict[tuple[int], complex]
+        The first Pauli sentence.
+    sentence2: dict[tuple[int], complex]
+        The second Pauli sentence.
     tol: float
         Tolerance. Non-negative number. Any value less than or equal to the tolerance is considered 0. Default tolerance
         is 0.
@@ -164,28 +157,28 @@ def full_sum(word_dict1: dict[tuple[int], complex], word_dict2: dict[tuple[int],
     Returns:
     --------
     result: dict[tuple[int], complex]
-        The sum of the two Pauli words as a dictionary.
+        The sum of the two Pauli sentences as a dictionary.
     """
-
-    result = word_dict1.copy()
-    for key in word_dict2.keys():
-        result[key] = result.get(key, 0) + word_dict2[key]
+    result = sentence1.copy()
+    for key in sentence2.keys():
+        result[key] = result.get(key, 0) + sentence2[key]
         if abs(result[key]) <= tol:
             result.pop(key)
+
     return result
 
 
-def full_product(word_dict1: dict[tuple[int], complex], word_dict2: dict[tuple[int], complex], tol: float = 0) -> \
+def full_product(sentence1: dict[tuple[int], complex], sentence2: dict[tuple[int], complex], tol: float = 0) -> \
         dict[tuple[int], complex]:
     """
-    Finds the product of two Pauli words.
+    Finds the product of two Pauli sentences.
 
     Parameters:
     -----------
-    word_dict1: dict[tuple[int], complex]
-        The first Pauli word.
-    word_dict2: dict[tuple[int], complex]
-        The second Pauli word.
+    sentence1: dict[tuple[int], complex]
+        The first Pauli sentence.
+    sentence2: dict[tuple[int], complex]
+        The second Pauli sentence.
     tol: float
         Tolerance. Non-negative number. Any value less than or equal to the tolerance is considered 0. Default tolerance
         is 0.
@@ -193,14 +186,13 @@ def full_product(word_dict1: dict[tuple[int], complex], word_dict2: dict[tuple[i
     Returns:
     --------
     result: dict[tuple[int], complex]
-        The product of the two Pauli words as a dictionary.
+        The product of the two Pauli sentences as a dictionary.
     """
-
     result = {}
-    for key1 in word_dict1.keys():
-        for key2 in word_dict2.keys():
+    for key1 in sentence1.keys():
+        for key2 in sentence2.keys():
             string, sign, c = string_product(key1, key2)
-            result[string] = result.get(string, 0) + sign * word_dict1[key1] * word_dict2[key2]
+            result[string] = result.get(string, 0) + sign * sentence1[key1] * sentence2[key2]
             if abs(result[string]) <= tol:
                 result.pop(string)
 
@@ -221,9 +213,8 @@ def string_exp(string: tuple[int], angle: float) -> dict[tuple[int], complex]:
     Returns:
     --------
     result: dict[tuple[int], complex]
-        The resulting Pauli word as a dictionary.
+        The resulting Pauli sentence as a dictionary.
     """
-
     result = {}
     if np.cos(angle) != 0:
         result[(0,) * len(string)] = np.cos(angle)
@@ -233,10 +224,10 @@ def string_exp(string: tuple[int], angle: float) -> dict[tuple[int], complex]:
 
 
 def exp_conjugation(generators: list[tuple[int]] | tuple[int], angles: list[float] | float,
-                    word_dict: dict[tuple[int], complex], tol: float = 0) -> dict[tuple[int], complex]:
+                    sentence: dict[tuple[int], complex], tol: float = 0) -> dict[tuple[int], complex]:
     """
-    Returns the conjugation of a Pauli word :math:`\mathrm{e}^{\mathrm{i} x_{1} P_1} ... \mathrm{e}^{\mathrm{i} x_n P_n}
-    X \mathrm{e}^{-\mathrm{i} x_{n} P_n} ... \mathrm{e}^{-\mathrm{i} x_1 P_1}`.
+    Returns the conjugation of a Pauli sentence :math:`\mathrm{e}^{\mathrm{i} x_{1} P_1} ...
+    \mathrm{e}^{\mathrm{i} x_n P_n} X \mathrm{e}^{-\mathrm{i} x_{n} P_n} ... \mathrm{e}^{-\mathrm{i} x_1 P_1}`.
     
     Parameters:
     -----------
@@ -244,20 +235,23 @@ def exp_conjugation(generators: list[tuple[int]] | tuple[int], angles: list[floa
         Can take a one Pauli string or a list of Pauli strings to be exponentiated.
     angles: list[float] | float
         Can take one angle or a list of angles.
-    word_dict: dict[tuple[int], complex]
-        The Pauli word to be conjugated.
+    sentence: dict[tuple[int], complex]
+        The Pauli sentence to be conjugated.
     tol: float
         Tolerance. Non-negative number. Any value less than or equal to the tolerance is considered 0. Default tolerance
         is 0.
-    """
 
+    Returns:
+    --------
+    result: dict[tuple[int], complex]
+        The resulting Pauli sentence as a dictionary.
+    """
     result = {}
     # Data reformatting
     angles_array = np.array([angles]).flatten()
     cosine_array = np.cos(2 * angles_array)
     sine_array = np.sin(2 * angles_array)
     generators_array = np.array([generators])
-
     if len(generators_array.shape) > 2:
         generators_array = np.squeeze(generators_array, axis=0)
 
@@ -265,12 +259,11 @@ def exp_conjugation(generators: list[tuple[int]] | tuple[int], angles: list[floa
     if len(generators_array) != len(angles_array):
         raise Exception(f"Length mismatch - generators: {len(generators_array)}, angles: {len(angles_array)}")
 
-    for key in word_dict.keys():
-        coefficient = word_dict[key]
+    for key in sentence.keys():
+        coefficient = sentence[key]
         for i in range(len(angles_array)):
             string, sign, c = string_product(tuple(generators_array[i]), key)
-
-            # If the ith exponent commutes with string (key) in the Pauli word do nothing
+            # If the ith exponent commutes with string (key) in the Pauli sentence do nothing
             if c:
                 result[key] = result.get(key, 0) + coefficient
             # If it doesn't commute it necessary anticommutes. Perform the operation exp(2ixP).string
@@ -286,20 +279,19 @@ def exp_conjugation(generators: list[tuple[int]] | tuple[int], angles: list[floa
     return result
 
 
-def trace(word_dict: dict[tuple[int], complex]) -> float | complex:
+def trace(sentence: dict[tuple[int], complex]) -> float | complex:
     """
-    Finds the normalized trace of a Pauli word.
+    Finds the normalized trace of a Pauli sentence.
     
     Parameters:
     -----------
-    word_dict: dict[tuple[int], complex]
-        The Pauli word.
+    sentence: dict[tuple[int], complex]
+        The Pauli sentence.
 
     Returns:
     --------
     trace: float | complex
-        The trace of the Pauli word divided by the length of a Pauli string.
+        The trace of the Pauli sentence divided by the length of a Pauli string.
     """
-
-    identity = (0,) * len(next(iter(word_dict)))
-    return word_dict.get(identity, 0)
+    identity = (0,) * len(next(iter(sentence)))
+    return sentence.get(identity, 0)
