@@ -1,8 +1,8 @@
 [project]
-name = "psp"
+name = "sumaq"
 requires-python = ">=3.11"
 # requires-python = ">=3.9"
-description = "Physical Simulation Package"
+description = "Spiced Up, More Accessible Quantum"
 version = "0.1.0"
 authors = [
     { name = "Norman Hogan", email = "anhogan3@ncsu.edu" },
