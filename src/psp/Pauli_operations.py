@@ -246,7 +246,6 @@ def exp_conjugation(generators: list[tuple[int]] | tuple[int], angles: list[floa
     result: dict[tuple[int], complex]
         The resulting Pauli sentence as a dictionary.
     """
-    result = {}
     # Data reformatting
     angles_array = np.array([angles]).flatten()
     cosine_array = np.cos(2 * angles_array)
@@ -259,22 +258,26 @@ def exp_conjugation(generators: list[tuple[int]] | tuple[int], angles: list[floa
     if len(generators_array) != len(angles_array):
         raise Exception(f"Length mismatch - generators: {len(generators_array)}, angles: {len(angles_array)}")
 
-    for key in sentence.keys():
-        coefficient = sentence[key]
-        for i in range(len(angles_array)):
+    result = sentence.copy()
+    for i in range(len(angles_array) - 1, -1, -1):
+        temp = {}
+        for key in result:
+            coefficient = temp[key]
             string, sign, c = string_product(tuple(generators_array[i]), key)
             # If the ith exponent commutes with string (key) in the Pauli sentence do nothing
             if c:
-                result[key] = result.get(key, 0) + coefficient
+                temp[key] = temp.get(key, 0) + coefficient
             # If it doesn't commute it necessary anticommutes. Perform the operation exp(2ixP).string
             else:
-                result[key] = result.get(key, 0) + cosine_array[i] * coefficient
-                result[string] = result.get(string, 0) + sign * 1j * sine_array[i] * coefficient
+                temp[key] = temp.get(key, 0) + cosine_array[i] * coefficient
+                temp[string] = temp.get(string, 0) + sign * 1j * sine_array[i] * coefficient
 
-                if abs(result[string]) <= tol:
-                    result.pop(string)
-        if abs(result[key]) <= tol:
-            result.pop(key)
+                if abs(temp[string]) <= tol:
+                    temp.pop(string)
+            if abs(temp[key]) <= tol:
+                temp.pop(key)
+
+        result = temp.copy()
 
     return result
 
