@@ -8,7 +8,7 @@ authors = [
     { name = "Norman Hogan", email = "anhogan3@ncsu.edu" },
     { name = "Alexander Kemper", email = "akemper@ncsu.edu" },
     { name = "Arvin Kushwaha", email = "askushwa@ncsu.edu" },
-    { name = "Omar Alsheikh", email = "ooalshei@ncsu.edu"},
+    { name = "Omar Alsheikh", email = "ooalshei@ncsu.edu" },
 ]
 dependencies = [
     "numpy",
