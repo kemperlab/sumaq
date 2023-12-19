@@ -200,7 +200,7 @@ def pretty_print(vectors: NDArray | list[NDArray]) -> None:
 
 def normalize(data: NDArray) -> NDArray:
     """
-    Normalizes some array quickly such that the maximum value is 1.
+    Normalizes some array quickly such that the maximum value is 1 and the minimum value is 0.
 
     Parameters:
     -----------
@@ -210,7 +210,7 @@ def normalize(data: NDArray) -> NDArray:
     Returns:
     --------
     normalized_data : NDArray
-                The normalized array.
+        The normalized array.
     """
     normalized_data = (data - min(data)) / (max(data) - min(data))
     return normalized_data
