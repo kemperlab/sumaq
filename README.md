@@ -1,2 +1,1 @@
-# $PSP^\dagger$
-Physics Simulation Package
+# $\text{SUMA}\mathrm{Q}$: Spiced Up, More Accessible Quantum!
