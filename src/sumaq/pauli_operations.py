@@ -265,7 +265,7 @@ def exp_conjugation(generators: list[tuple[int, ...]] | tuple[int, ...],
     for i in range(len(angles_array) - 1, -1, -1):
         temp: dict[tuple[int, ...], complex] = {}
         for key in result:
-            coefficient = temp[key]
+            coefficient = result[key]
             string, sign, c = string_product(tuple(generators_array[i]),
                                              key)  # type: ignore
             # If the ith exponent commutes with string (key) in the Pauli sentence do nothing
