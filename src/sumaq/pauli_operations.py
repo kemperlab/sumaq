@@ -1,5 +1,5 @@
 # Python version 3.11.5
-# Modified on December 18, 2023
+# Modified on December 19, 2023
 """
 Pauli Operations
 ----------------
@@ -24,12 +24,12 @@ def product(sigma1: int, sigma2: int) -> int:
 
     Parameters:
     -----------
-    sigma1: int and sigma2: int
+    sigma1, sigma2: int
         The two Pauli matrices. The integer can be between 0 and 3.
 
     Returns:
     --------
-    product: int
+    int
         The product of two Pauli matrices. The product of any matrix with itself gives 0. The product of any matrix with
         0 gives the same matrix. The product of any two different non-identity matrices returns the third non-identity
         matrix
@@ -43,16 +43,14 @@ def signed_product(sigma1: int, sigma2: int) -> tuple[int, complex]:
 
     Parameters:
     -----------
-    sigma1: int
-        The first Pauli matrix. The integer can be between 0 and 3.
-    sigma2: int
-        The second Pauli matrix. The integer can be between 0 and 3.
+    sigma1, sigma2: int
+        The two Pauli matrices. The integer can be between 0 and 3.
 
     Returns:
     --------
-    product: int
+    int
         The unsigned product of two Pauli matrices.
-    sign: complex
+    complex
         The sign of the product. If two non-identity matrices are multiplied, the sign will be +i if :math:`\sigma_1
         \sigma_2 = c \sigma_3` is a cyclic permutation of (X, Y, Z) and -i if it is not.
     """
@@ -67,10 +65,8 @@ def string_product(
 
     Parameters:
     -----------
-    string1: tuple[int, ...]
-        The first Pauli string.
-    string2: tuple[int, ...]
-        The second Pauli string.
+    string1, string2: tuple[int, ...]
+        The two Pauli strings.
 
     Returns:
     --------
@@ -78,7 +74,7 @@ def string_product(
         The product of the two strings.
     sign: complex
         The sign of the product.
-    commutator: bool
+    bool
        True if the two strings commute and False otherwise.
     """
     # Consistency check
@@ -153,13 +149,10 @@ def full_sum(sentence1: dict[tuple[int, ...], complex],
 
     Parameters:
     -----------
-    sentence1: dict[tuple[int, ...], complex]
-        The first Pauli sentence.
-    sentence2: dict[tuple[int, ...], complex]
-        The second Pauli sentence.
-    tol: float
-        Tolerance. Non-negative number. Any value less than or equal to the tolerance is considered 0. Default tolerance
-        is 0.
+    sentence1, sentence2: dict[tuple[int, ...], complex]
+        The two Pauli sentences.
+    tol: float, default=0
+        Tolerance. Non-negative number. Any value less than or equal to the tolerance is considered 0.
 
     Returns:
     --------
@@ -183,13 +176,10 @@ def full_product(sentence1: dict[tuple[int, ...], complex],
 
     Parameters:
     -----------
-    sentence1: dict[tuple[int, ...], complex]
-        The first Pauli sentence.
-    sentence2: dict[tuple[int, ...], complex]
-        The second Pauli sentence.
-    tol: float
-        Tolerance. Non-negative number. Any value less than or equal to the tolerance is considered 0. Default tolerance
-        is 0.
+    sentence1, sentence2: dict[tuple[int, ...], complex]
+        The two Pauli sentences.
+    tol: float, default=0
+        Tolerance. Non-negative number. Any value less than or equal to the tolerance is considered 0.
 
     Returns:
     --------
@@ -249,9 +239,8 @@ def exp_conjugation(generators: list[tuple[int, ...]] | tuple[int, ...],
         Can take one angle or a list of angles.
     sentence: dict[tuple[int, ...], complex]
         The Pauli sentence to be conjugated.
-    tol: float
-        Tolerance. Non-negative number. Any value less than or equal to the tolerance is considered 0. Default tolerance
-        is 0.
+    tol: float, default=0
+        Tolerance. Non-negative number. Any value less than or equal to the tolerance is considered 0.
 
     Returns:
     --------
@@ -309,7 +298,7 @@ def trace(sentence: dict[tuple[int, ...], complex]) -> float | complex:
 
     Returns:
     --------
-    trace: float | complex
+    float | complex
         The trace of the Pauli sentence divided by the length of a Pauli string.
     """
     identity = (0, ) * len(next(iter(sentence)))
