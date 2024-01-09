@@ -9,6 +9,7 @@ calculations or data processing are also included here.
 import numpy as np
 import scipy
 from numpy.typing import NDArray
+from openfermion import jordan_wigner, FermionOperator
 
 
 def get_ground_state(hamiltonian: NDArray) -> tuple[float, NDArray]:
@@ -88,12 +89,63 @@ def get_fidelity(vector1: NDArray, vector2: NDArray) -> float:
     fidelity : float
         The fidelity between the two vectors.
     """
-    fidelity = np.absolute(np.dot(vector1, vector2))**2
+    fidelity = np.absolute(np.dot(vector1, vector2)) ** 2
     return fidelity
 
 
-def save_dict_to_txt(dictionary: dict[str, list[float] | NDArray],
-                     file_name: str, path: str) -> None:
+def generate_paulis_from_fermionic_ops(
+    operators: dict[str, list[float]], N_sites: int
+) -> tuple[NDArray, list[str]]:
+    """
+    Creates the Jordan-Wigner transformed fermionic annihilation and creation operators from Openfermion syntax.
+    The dictionary `operators` consists of keys which are strings of the form `i` or `i^`, where `i` is an integer between `0` and `N_sites-1`
+    and is the index of the creation (`i`) or annihilation (`i^`) operator. Each index (and corresponding `^`, if applicable) is separated by
+    spaces. The values of `operators` are the leading coefficient of the corresponding operator key.
+
+    For example, if `N_sites` is `2` and `operators` is `{"0^ 1": 1.0, "1^ 0": 2.0}`, then this function will return:\n
+
+    `coeffs = array([0.  +0.25j, 0.75+0.j  , 0.75+0.j  , 0.  -0.25j])`\n
+    `paulis = ['YX', 'YY', 'XX', 'XY']`\n
+
+    If, instead, `N_sites` were `3`, then the returned arrays would be:\n
+
+    `coeffs = array([0.  +0.25j, 0.75+0.j  , 0.75+0.j  , 0.  -0.25j])`\n
+    `paulis = ['YX-', 'YY-', 'XX-', 'XY-']`\n
+
+
+
+    Parameters:
+    -----------
+    N_sites : int
+        The total number of sites which a fermion can occupy.
+
+    Reurns:
+    -    ops : dict(jordan_wigner(FermionOperator()))
+            The Jordan-Wigner tranformed operators.
+    """
+    jw_fermionic_op_form = jordan_wigner(FermionOperator())
+
+    for el in operators.keys():
+        jw_fermionic_op_form += operators[el] * jordan_wigner(FermionOperator(el))
+
+    pauli_data = jw_fermionic_op_form.terms
+
+    coeffs = np.array(list(pauli_data.values()))
+    raw_pauli = list(pauli_data.keys())
+    paulis = []
+
+    for term in raw_pauli:
+        string = "-" * (N_sites - len(term))
+        for site in term:
+            string = string[: site[0]] + site[1] + string[site[0] :]
+        paulis.append(string)
+
+    return coeffs, paulis
+
+
+def save_dict_to_txt(
+    dictionary: dict[str, list[float] | NDArray], file_name: str, path: str
+) -> None:
     """
     Saves a dictionary to a .txt file in the format:
 
@@ -116,8 +168,7 @@ def save_dict_to_txt(dictionary: dict[str, list[float] | NDArray],
     """
     with open(path + "/" + file_name, "w") as file:
         for key, values in dictionary.items():
-            file.write(key + "\t" + "\t".join(str(val)
-                                              for val in values) + "\n")
+            file.write(key + "\t" + "\t".join(str(val) for val in values) + "\n")
 
 
 def load_txt_to_dict(file_name: str, path: str) -> dict[str, NDArray]:

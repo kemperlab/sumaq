@@ -1,33 +1,64 @@
 from typing import Literal
-
+import numpy as np
 from numpy.typing import NDArray
-# from numpy.fft import fft, fftfreq
+from scipy.fft import fft, fftfreq
+from scipy.signal import find_peaks
 
 
-class GreensFunction():
+class GreensFunction:
     times: NDArray
-    time_values: NDArray
 
     frequencies: NDArray
-    frequency_values: NDArray
 
-    def __init__(self, main_axis: NDArray, main_axis_values: NDArray,
-                 kind: Literal["time", "frequency"]):
+    def __init__(
+        self,
+        main_axis: NDArray,
+        kind: Literal["time", "frequency"],
+        N_sample_fft: int = 1000,
+        dt_fft: float = 0.01,
+        representation: Literal["lehmann", "operator"] = "lehmann",
+    ):
         match kind:
             case "time":
                 self.times = main_axis
-                self.time_values = main_axis_values
-
-                # TODO: self.frequencies =
-                # TODO: self.frequency_values =
+                self.frequencies = fftfreq(N_sample_fft, dt_fft)
 
             case "frequency":
                 self.frequencies = main_axis
-                self.frequency_values = main_axis_values
-
-                # TODO: self.times =
-                # TODO: self.time_values =
+                self.times = np.linspace(0, N_sample_fft * dt_fft, N_sample_fft)
 
             case _:
-                raise ValueError('Expected `kind` to be "time" or '
-                                 f'"frequency", but found {kind}')
+                raise ValueError(
+                    'Expected `kind` to be "time" or ' f'"frequency", but found {kind}'
+                )
+
+        match representation:
+            case "lehmann":
+                self.greensfunction = self.lehmann_representation()
+
+            case "operator":
+                self.greensfunction = self.operator_representation()
+
+            case _:
+                raise ValueError(
+                    f'Expected `representation` to be "lehmann" or "operator", but found {representation}'
+                )
+
+    def lehmann_representation(self):
+        ...
+
+        # TODO: calculate Lehmann representation
+
+    def operator_representation(self):
+        ...
+
+        # TODO: calculate operator representation
+
+    def spectral_representation(self):
+        ...
+
+        # TODO: calculate spectral representation
+
+    def peak_locator(self):
+        ...
+        # peaks = find_peaks(self.times)
