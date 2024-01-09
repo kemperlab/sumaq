@@ -9,7 +9,9 @@ calculations or data processing are also included here.
 import numpy as np
 import scipy
 from numpy.typing import NDArray
+from typing import Literal
 from openfermion import jordan_wigner, FermionOperator
+from qiskit.quantum_info import SparsePauliOp
 
 
 def get_ground_state(hamiltonian: NDArray) -> tuple[float, NDArray]:
@@ -94,34 +96,45 @@ def get_fidelity(vector1: NDArray, vector2: NDArray) -> float:
 
 
 def generate_paulis_from_fermionic_ops(
-    operators: dict[str, list[float]], N_sites: int
+    operators: dict[str, list[float]],
+    N_sites: int,
 ) -> tuple[NDArray, list[str]]:
     """
     Creates the Jordan-Wigner transformed fermionic annihilation and creation operators from Openfermion syntax.
     The dictionary `operators` consists of keys which are strings of the form `i` or `i^`, where `i` is an integer between `0` and `N_sites-1`
-    and is the index of the creation (`i`) or annihilation (`i^`) operator. Each index (and corresponding `^`, if applicable) is separated by
-    spaces. The values of `operators` are the leading coefficient of the corresponding operator key.
+    and is the index of the creation (`i`) or annihilation (`i^`) operator. Each index (and corresponding `^`, if applicable) should be separated
+    by spaces. The values of `operators` are the leading coefficient of the corresponding operator key.
 
-    For example, if `N_sites` is `2` and `operators` is `{"0^ 1": 1.0, "1^ 0": 2.0}`, then this function will return:\n
+    For example, if `N_sites` is `2` and `operators` is `{"0^ 1": 1.0, "1^ 0": 1.0}`, then this function will return:\n
+
+    `coeffs = array([0.5+0.j, 0.5+0.j])`\n
+    `paulis = ['YY', 'XX']`\n
+
+    As another example, if `N_sites` is `2` and `operators` is `{"0^ 1": 1.0, "1^ 0": 2.0}`, then this function will return:\n
 
     `coeffs = array([0.  +0.25j, 0.75+0.j  , 0.75+0.j  , 0.  -0.25j])`\n
     `paulis = ['YX', 'YY', 'XX', 'XY']`\n
 
-    If, instead, `N_sites` were `3`, then the returned arrays would be:\n
+    If, instead, `N_sites` were `3`, then the return output would be:\n
 
     `coeffs = array([0.  +0.25j, 0.75+0.j  , 0.75+0.j  , 0.  -0.25j])`\n
     `paulis = ['YX-', 'YY-', 'XX-', 'XY-']`\n
 
-
-
     Parameters:
     -----------
+    operators : dict(str, list[float])
+        The dictionary of fermionic operators. The keys are strings of the form `i` or `i^`, where `i` is an integer between `0` and `N_sites-1`
+        and is the index of the creation (`i`) or annihilation (`i^`) operator. Each index (and corresponding `^`, if applicable) should be
+        separated by spaces. The values are the leading coefficients of the corresponding operator keys.
     N_sites : int
         The total number of sites which a fermion can occupy.
 
     Reurns:
-    -    ops : dict(jordan_wigner(FermionOperator()))
-            The Jordan-Wigner tranformed operators.
+    -------
+    coeffs : NDArray
+        An array of floats corresponding to the coefficients of the Pauli operators.
+    paulis : list[str]
+        A list of strings corresponding to the Pauli operators.
     """
     jw_fermionic_op_form = jordan_wigner(FermionOperator())
 
@@ -141,6 +154,31 @@ def generate_paulis_from_fermionic_ops(
         paulis.append(string)
 
     return coeffs, paulis
+
+
+def get_sparse_from_paulis(coeffs: NDArray, paulis: list[str]) -> NDArray:
+    """
+    Converts a list of Pauli operators and corresponding coefficients to a sparse matrix representation.
+
+    Parameters:
+    -----------
+    coeffs : NDArray
+        The coefficients of the Pauli operators.
+    paulis : list[str]
+        The Pauli operators.
+
+    Returns:
+    --------
+    sparse_matrix : NDArray
+        The sparse matrix representation of the Pauli operators.
+    """
+    for i, pauli in enumerate(paulis):
+        if "-" in pauli:
+            paulis[i] = pauli.replace("-", "I")
+
+    sparse_matrix = SparsePauliOp(paulis, coeffs=coeffs).to_matrix()
+
+    return sparse_matrix  # type: ignore
 
 
 def save_dict_to_txt(
