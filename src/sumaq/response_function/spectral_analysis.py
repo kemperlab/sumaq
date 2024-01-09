@@ -78,5 +78,19 @@ class SignalAnalysis:
     def get_projected_density_of_states(self):
         ...
 
-    def get_self_energy(self):
-        ...
+    def get_self_energy(self, non_interacting_signal: NDArray) -> NDArray:
+        """
+        Calculates the self-energy of the system.
+
+        Parameters:
+        -----------
+        non_interacting_signal: NDArray
+            The signal of the non-interacting system.
+
+        Returns:
+        --------
+        self_energy: NDArray
+            The self-energy of the system.
+        """
+        self_energy = 1/non_interacting_signal - 1/self.signal
+        return self_energy

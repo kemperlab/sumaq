@@ -96,7 +96,7 @@ def get_fidelity(vector1: NDArray, vector2: NDArray) -> float:
 
 
 def generate_paulis_from_fermionic_ops(
-    operators: dict[str, list[float]],
+    operators: dict[str, float],
     N_sites: int,
 ) -> tuple[NDArray, list[str]]:
     """
@@ -179,6 +179,158 @@ def get_sparse_from_paulis(coeffs: NDArray, paulis: list[str]) -> NDArray:
     sparse_matrix = SparsePauliOp(paulis, coeffs=coeffs).to_matrix()
 
     return sparse_matrix  # type: ignore
+
+
+def lehmann_greens_function(
+    hamiltonian: NDArray,
+    ground_state: NDArray,
+    ground_energy: float,
+    frequency: NDArray,
+    N_sites: int,
+    element: tuple[int, int],
+    frequency_type: Literal["real", "imaginary"] = "real",
+    eta: float = 0.1,
+    particle_type: Literal["fermion", "boson"] = "fermion",
+) -> NDArray:
+    """
+    Calculates the Lehmann representation of the Greens function in the frequency domain. Supports both fermionic and bosonic operators and
+    real and imaginary frequencies.
+
+    Parameters:
+    -----------
+    hamiltonian : NDArray
+        The Hamiltonian of the system.
+    ground_state : NDArray
+        The ground state of the system.
+    ground_energy : float
+        The energy of the ground state of the system.
+    frequency : NDArray
+        The frequencies at which to calculate the Greens function.
+    N_sites : int
+        The number of sites in the system.
+    element : tuple[int, int]
+        The element of the Greens function to calculate.
+    frequency_type : str
+        The type of frequency to use. Valid options are "imaginary" and "real". Default is "real".
+    eta : float
+        The small, positive value to use if `frequency_type` is "real". Default is 0.1.
+    particle_type : str
+        The type of particle to use. Valid options are "fermion" and "boson". Default is "fermion".
+
+    Returns:
+    --------
+    g_ij : NDArray
+        The (i,j)-th element of the Greens function.
+    """
+    g_ij = np.zeros(len(frequency), dtype=complex)
+
+    coeffs, paulis = generate_paulis_from_fermionic_ops(
+        {str(element[0]) + "^": 1.0}, N_sites
+    )
+    ci_dag = get_sparse_from_paulis(coeffs, paulis)
+    ci_dag_psi = ci_dag @ ground_state
+
+    coeffs, paulis = generate_paulis_from_fermionic_ops(
+        {str(element[1]) + "^": 1.0}, N_sites
+    )
+    cj_dag = get_sparse_from_paulis(coeffs, paulis)
+    cj_dag_psi = cj_dag @ ground_state
+
+    for i, w in enumerate(frequency):
+        if frequency_type == "imag":
+            mat1 = (1j * w + ground_energy) * np.eye(2**N_sites) - hamiltonian
+            mat2 = (1j * w - ground_energy) * np.eye(2**N_sites) + hamiltonian
+        elif frequency_type == "real":
+            mat1 = (w + ground_energy + 1j * eta) * np.eye(2**N_sites) - hamiltonian
+            mat2 = (w - ground_energy + 1j * eta) * np.eye(2**N_sites) + hamiltonian
+        else:
+            raise ValueError(
+                f'Expected `frequency_type` to be "real" or "imaginary", but found {frequency_type}'
+            )
+
+        g_ci_dag_psi = np.linalg.solve(mat1, ci_dag_psi)
+        g_cj_dag_psi = np.linalg.solve(mat2, cj_dag_psi)
+
+        g_ij[i] = np.transpose(np.conjugate(cj_dag_psi)) @ g_ci_dag_psi
+        if particle_type == "fermion":
+            g_ij[i] += np.transpose(np.conjugate(ci_dag_psi)) @ g_cj_dag_psi
+        elif particle_type == "boson":
+            g_ij[i] -= np.transpose(np.conjugate(ci_dag_psi)) @ g_cj_dag_psi
+        else:
+            raise ValueError(
+                f'Expected `particle_type` to be "fermion" or "boson", but found {particle_type}'
+            )
+
+    return g_ij
+
+
+def retarded_greens_function(
+    hamiltonian: NDArray,
+    ground_state: NDArray,
+    time_values: NDArray,
+    N_sites: int,
+    element: tuple[int, int],
+    particle_type: Literal["fermion", "boson"] = "fermion",
+) -> NDArray:
+    """
+    Calculates the retarded Greens function in the time domain.
+
+    Parameters:
+    -----------
+    hamiltonian : NDArray
+        The Hamiltonian of the system.
+    ground_state : NDArray
+        The ground state of the system.
+    time_values : NDArray
+        The time values at which to calculate the Greens function.
+    N_sites : int
+        The number of sites in the system.
+    element : tuple[int, int]
+        The element of the Greens function to calculate.
+    particle_type : str
+        The type of particle to use. Valid options are "fermion" and "boson". Default is "fermion".
+
+
+    Returns:
+    --------
+    g_ij : NDArray
+        The (i,j)-th element of the Greens function.
+    """
+    g_ij = np.zeros(len(time_values), dtype=complex)
+
+    coeffs, paulis = generate_paulis_from_fermionic_ops({str(element[0]): 1.0}, N_sites)
+    ci = get_sparse_from_paulis(coeffs, paulis)
+
+    coeffs, paulis = generate_paulis_from_fermionic_ops(
+        {str(element[0]) + "^": 1.0}, N_sites
+    )
+    ci_dag = get_sparse_from_paulis(coeffs, paulis)
+
+    coeffs, paulis = generate_paulis_from_fermionic_ops({str(element[1]): 1.0}, N_sites)
+    cj = get_sparse_from_paulis(coeffs, paulis)
+
+    coeffs, paulis = generate_paulis_from_fermionic_ops(
+        {str(element[1]) + "^": 1.0}, N_sites
+    )
+    cj_dag = get_sparse_from_paulis(coeffs, paulis)
+
+    state_dag = np.transpose(np.conjugate(ground_state))
+
+    for i, t in enumerate(time_values):
+        e_ith = scipy.linalg.expm(-1j * t * hamiltonian)
+        e_ithdag = np.transpose(np.conjugate(e_ith))
+        g_ij[i] = -1j * (state_dag @ e_ithdag @ cj @ e_ith @ ci_dag @ ground_state)
+
+        if particle_type == "fermion":
+            g_ij[i] += -1j * (state_dag @ cj_dag @ e_ithdag @ ci @ e_ith @ ground_state)
+        elif particle_type == "boson":
+            g_ij[i] -= -1j * (state_dag @ cj_dag @ e_ithdag @ ci @ e_ith @ ground_state)
+        else:
+            raise ValueError(
+                f'Expected `particle_type` to be "fermion" or "boson", but found {particle_type}'
+            )
+
+    return g_ij
 
 
 def save_dict_to_txt(
