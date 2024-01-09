@@ -1,0 +1,6 @@
+
+class BosonicString:
+    ...
+
+class BosonicSentence:
+    ...

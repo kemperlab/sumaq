@@ -6,12 +6,9 @@ processes within the main modules. Functions that are useful for quick
 calculations or data processing are also included here.
 """
 
-############ Imports ############
 import numpy as np
 import scipy
 from numpy.typing import NDArray
-
-#################################
 
 
 def get_ground_state(hamiltonian: NDArray) -> tuple[float, NDArray]:
@@ -91,13 +88,12 @@ def get_fidelity(vector1: NDArray, vector2: NDArray) -> float:
     fidelity : float
         The fidelity between the two vectors.
     """
-    fidelity = np.absolute(np.dot(vector1, vector2)) ** 2
+    fidelity = np.absolute(np.dot(vector1, vector2))**2
     return fidelity
 
 
-def save_dict_to_txt(
-    dictionary: dict[str, list[float] | NDArray], file_name: str, path: str
-) -> None:
+def save_dict_to_txt(dictionary: dict[str, list[float] | NDArray],
+                     file_name: str, path: str) -> None:
     """
     Saves a dictionary to a .txt file in the format:
 
@@ -120,7 +116,8 @@ def save_dict_to_txt(
     """
     with open(path + "/" + file_name, "w") as file:
         for key, values in dictionary.items():
-            file.write(key + "\t" + "\t".join(str(val) for val in values) + "\n")
+            file.write(key + "\t" + "\t".join(str(val)
+                                              for val in values) + "\n")
 
 
 def load_txt_to_dict(file_name: str, path: str) -> dict[str, NDArray]:

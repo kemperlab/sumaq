@@ -1,0 +1,6 @@
+
+class FermionicString:
+    ...
+
+class FermionicSentence:
+    ...

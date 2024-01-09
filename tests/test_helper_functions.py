@@ -4,11 +4,8 @@ Testing script for helper_functions.py
 This script ensures that the helper functions in helper_functions.py are working as expected.
 """
 
-############ Imports ############
 from sumaq.helper_functions import *
 import numpy as np
-
-#################################
 
 
 def test_get_ground_state():

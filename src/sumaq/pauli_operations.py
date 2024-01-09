@@ -1,5 +1,3 @@
-# Python version 3.11.5
-# Modified on December 19, 2023
 """
 Pauli Operations
 ----------------
@@ -7,10 +5,7 @@ This module contains several useful operations on Pauli strings. The identity al
 interchangeably referred to as (0, 1, 2, 3) or (-, X, Y, Z).
 """
 
-##### Imports #####
 import numpy as np
-
-###################
 
 # These arrays are used to find products of Pauli matrices
 RULES = np.array([1, 3, 1, 3])
