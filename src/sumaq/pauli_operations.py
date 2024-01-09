@@ -7,10 +7,8 @@ interchangeably referred to as (0, 1, 2, 3) or (-, X, Y, Z).
 
 import numpy as np
 
-# These arrays are used to find products of Pauli matrices
 RULES = np.array([1, 3, 1, 3])
-SIGN_RULES = np.array([[1, 1, 1, 1], [1, 1, 1j, -1j], [1, -1j, 1, 1j],
-                       [1, 1j, -1j, 1]])
+SIGN_RULES = np.array([[1, 1, 1, 1], [1, 1, 1j, -1j], [1, -1j, 1, 1j], [1, 1j, -1j, 1]])
 
 
 def product(sigma1: int, sigma2: int) -> int:
@@ -53,8 +51,8 @@ def signed_product(sigma1: int, sigma2: int) -> tuple[int, complex]:
 
 
 def string_product(
-        string1: tuple[int, ...],
-        string2: tuple[int, ...]) -> tuple[tuple[int, ...], complex, bool]:
+    string1: tuple[int, ...], string2: tuple[int, ...]
+) -> tuple[tuple[int, ...], complex, bool]:
     """
     Returns the signed product of two Pauli strings and whether they commute.
 
@@ -74,15 +72,14 @@ def string_product(
     """
     # Consistency check
     if len(string1) != len(string2):
-        raise Exception(
-            f"Dimension mismatch ({len(string1)} and {len(string2)})")
+        raise Exception(f"Dimension mismatch ({len(string1)} and {len(string2)})")
 
     string1_array = np.array(string1)
     string2_array = np.array(string2)
-    sign: complex = np.prod(SIGN_RULES[string1_array,
-                                       string2_array])  # type: ignore
+    sign: complex = np.prod(SIGN_RULES[string1_array, string2_array])  # type: ignore
     result: tuple[int, ...] = tuple(
-        (string1_array + np.multiply(string2_array, RULES[string1_array])) % 4)
+        (string1_array + np.multiply(string2_array, RULES[string1_array])) % 4
+    )
 
     if sign.imag == 0:
         return result, sign, True
@@ -102,8 +99,8 @@ def string_product(
 
 
 def strings_to_dict(
-        strings: list[tuple[int, ...]] | tuple[int, ...],
-        coefficients: list[complex] | complex
+    strings: list[tuple[int, ...]] | tuple[int, ...],
+    coefficients: list[complex] | complex,
 ) -> dict[tuple[int, ...], complex]:
     """
     Returns a dictionary for a Pauli sentence with the Pauli strings as keys and their corresponding coefficients as
@@ -136,9 +133,11 @@ def strings_to_dict(
     return dict(zip(strings_tuple, coefficients_array))
 
 
-def full_sum(sentence1: dict[tuple[int, ...], complex],
-             sentence2: dict[tuple[int, ...], complex],
-             tol: float = 0) -> dict[tuple[int, ...], complex]:
+def full_sum(
+    sentence1: dict[tuple[int, ...], complex],
+    sentence2: dict[tuple[int, ...], complex],
+    tol: float = 0,
+) -> dict[tuple[int, ...], complex]:
     """
     Finds the sum of two Pauli sentences.
 
@@ -163,9 +162,11 @@ def full_sum(sentence1: dict[tuple[int, ...], complex],
     return result
 
 
-def full_product(sentence1: dict[tuple[int, ...], complex],
-                 sentence2: dict[tuple[int, ...], complex],
-                 tol: float = 0) -> dict[tuple[int, ...], complex]:
+def full_product(
+    sentence1: dict[tuple[int, ...], complex],
+    sentence2: dict[tuple[int, ...], complex],
+    tol: float = 0,
+) -> dict[tuple[int, ...], complex]:
     """
     Finds the product of two Pauli sentences.
 
@@ -185,16 +186,16 @@ def full_product(sentence1: dict[tuple[int, ...], complex],
     for key1 in sentence1.keys():
         for key2 in sentence2.keys():
             string, sign, c = string_product(key1, key2)
-            result[string] = result.get(
-                string, 0) + sign * sentence1[key1] * sentence2[key2]
+            result[string] = (
+                result.get(string, 0) + sign * sentence1[key1] * sentence2[key2]
+            )
             if abs(result[string]) <= tol:
                 result.pop(string)
 
     return result
 
 
-def string_exp(string: tuple[int, ...],
-               angle: float) -> dict[tuple[int, ...], complex]:
+def string_exp(string: tuple[int, ...], angle: float) -> dict[tuple[int, ...], complex]:
     r"""
     Finds the exponential of a Pauli string :math:`\mathrm{e}^{\mathrm{i} x P} = \cos{x} + \mathrm{i}P\sin{x}`.
 
@@ -212,20 +213,22 @@ def string_exp(string: tuple[int, ...],
     """
     result = {}
     if np.cos(angle) != 0:
-        result[(0, ) * len(string)] = np.cos(angle)
+        result[(0,) * len(string)] = np.cos(angle)
     if np.sin(angle) != 0:
         result[string] = 1j * np.sin(angle)
     return result
 
 
-def exp_conjugation(generators: list[tuple[int, ...]] | tuple[int, ...],
-                    angles: list[float] | float,
-                    sentence: dict[tuple[int, ...], complex],
-                    tol: float = 0) -> dict[tuple[int, ...], complex]:
+def exp_conjugation(
+    generators: list[tuple[int, ...]] | tuple[int, ...],
+    angles: list[float] | float,
+    sentence: dict[tuple[int, ...], complex],
+    tol: float = 0,
+) -> dict[tuple[int, ...], complex]:
     r"""
     Returns the conjugation of a Pauli sentence :math:`\mathrm{e}^{\mathrm{i} x_{1} P_1} ...
     \mathrm{e}^{\mathrm{i} x_n P_n} X \mathrm{e}^{-\mathrm{i} x_{n} P_n} ... \mathrm{e}^{-\mathrm{i} x_1 P_1}`.
-    
+
     Parameters:
     -----------
     generators: list[tuple[int, ...]] | tuple[int, ...]
@@ -261,16 +264,18 @@ def exp_conjugation(generators: list[tuple[int, ...]] | tuple[int, ...],
         temp: dict[tuple[int, ...], complex] = {}
         for key in result:
             coefficient = result[key]
-            string, sign, c = string_product(tuple(generators_array[i]),
-                                             key)  # type: ignore
+            string, sign, c = string_product(
+                tuple(generators_array[i]), key
+            )  # type: ignore
             # If the ith exponent commutes with string (key) in the Pauli sentence do nothing
             if c:
                 temp[key] = temp.get(key, 0) + coefficient
             # If it doesn't commute it necessary anticommutes. Perform the operation exp(2ixP).string
             else:
                 temp[key] = temp.get(key, 0) + cosine_array[i] * coefficient
-                temp[string] = temp.get(
-                    string, 0) + sign * 1j * sine_array[i] * coefficient
+                temp[string] = (
+                    temp.get(string, 0) + sign * 1j * sine_array[i] * coefficient
+                )
 
                 if abs(temp[string]) <= tol:
                     temp.pop(string)
@@ -285,7 +290,7 @@ def exp_conjugation(generators: list[tuple[int, ...]] | tuple[int, ...],
 def trace(sentence: dict[tuple[int, ...], complex]) -> float | complex:
     """
     Finds the normalized trace of a Pauli sentence.
-    
+
     Parameters:
     -----------
     sentence: dict[tuple[int, ...], complex]
@@ -296,5 +301,5 @@ def trace(sentence: dict[tuple[int, ...], complex]) -> float | complex:
     float | complex
         The trace of the Pauli sentence divided by the length of a Pauli string.
     """
-    identity = (0, ) * len(next(iter(sentence)))
+    identity = (0,) * len(next(iter(sentence)))
     return sentence.get(identity, 0)
