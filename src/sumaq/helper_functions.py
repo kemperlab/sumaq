@@ -233,8 +233,8 @@ def lehmann_greens_function(
     coeffs, paulis = generate_paulis_from_fermionic_ops(
         {str(element[1]) + "^": 1.0}, N_sites
     )
-    cj_dag = get_sparse_from_paulis(coeffs, paulis)
-    cj_dag_psi = cj_dag @ ground_state
+    cj = get_sparse_from_paulis(coeffs, paulis)
+    cj_psi = cj @ ground_state
 
     for i, w in enumerate(frequency):
         if frequency_type == "imag":
@@ -249,13 +249,13 @@ def lehmann_greens_function(
             )
 
         g_ci_dag_psi = np.linalg.solve(mat1, ci_dag_psi)
-        g_cj_dag_psi = np.linalg.solve(mat2, cj_dag_psi)
+        g_cj_psi = np.linalg.solve(mat2, cj_psi)
 
-        g_ij[i] = np.transpose(np.conjugate(cj_dag_psi)) @ g_ci_dag_psi
+        g_ij[i] = np.transpose(np.conjugate(ground_state)) @ cj @ g_ci_dag_psi
         if particle_type == "fermion":
-            g_ij[i] += np.transpose(np.conjugate(ci_dag_psi)) @ g_cj_dag_psi
+            g_ij[i] += np.transpose(np.conjugate(ground_state)) @ ci_dag @ g_cj_psi
         elif particle_type == "boson":
-            g_ij[i] -= np.transpose(np.conjugate(ci_dag_psi)) @ g_cj_dag_psi
+            g_ij[i] -= np.transpose(np.conjugate(ground_state)) @ ci_dag @ g_cj_psi
         else:
             raise ValueError(
                 f'Expected `particle_type` to be "fermion" or "boson", but found {particle_type}'

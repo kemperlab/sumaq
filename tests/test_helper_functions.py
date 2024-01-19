@@ -35,3 +35,29 @@ def test_normalize():
     test_data = np.array([1, 2, 3, 4, 5])
     expected_result = np.array([0, 0.25, 0.5, 0.75, 1])
     assert np.allclose(normalize(test_data), expected_result)
+
+
+def test_generate_paulis_from_fermionic_ops():
+    test_operators = {"0^ 1": 1.0, "1^ 0": 1.0, "0^ 0": 3.0}
+    N_sites = 1
+    expected_coeffs = np.array([0.5 + 0.0j, 0.5 + 0.0j, 1.5 + 0.0j, -1.5 + 0.0j])
+    expected_paulis = ["YY", "XX", "--", "Z-"]
+    coeffs, paulis = generate_paulis_from_fermionic_ops(test_operators, N_sites)
+    assert np.allclose(coeffs, expected_coeffs)
+    assert paulis == expected_paulis
+
+
+def test_get_sparse_from_paulis():
+    test_coeffs = np.array([1.0, 2.0, 1.0, -3.0])
+    test_paulis = ["-X", "Y-", "XX", "YY"]
+    expected_sparse_matrix = np.array(
+        [
+            [0.0 + 0.0j, 1.0 + 0.0j, 0.0 - 2.0j, 4.0 + 0.0j],
+            [1.0 + 0.0j, 0.0 + 0.0j, -2.0 + 0.0j, 0.0 - 2.0j],
+            [0.0 + 2.0j, -2.0 + 0.0j, 0.0 + 0.0j, 1.0 + 0.0j],
+            [4.0 + 0.0j, 0.0 + 2.0j, 1.0 + 0.0j, 0.0 + 0.0j],
+        ]
+    )
+    assert np.allclose(
+        get_sparse_from_paulis(test_coeffs, test_paulis), expected_sparse_matrix
+    )
