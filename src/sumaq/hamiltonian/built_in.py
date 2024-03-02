@@ -97,11 +97,13 @@ class Impurity(Operator):
             The impurity energy.
         """
         self.N_sites = N_sites
-        self.V_bath = V_bath
-        self.e_bath = e_bath
         
         if isinstance(V_bath, float):
-            self.V_bath = np.array([V_bath]) # << this line here
+            self.V_bath = np.array([V_bath])
         elif isinstance(V_bath, list):
             self.V_bath = np.array(V_bath)
-    
+        
+        if isinstance(e_bath, float):
+            self.e_bath = np.array([e_bath])
+        elif isinstance(e_bath, list):
+            self.e_bath = np.array(e_bath)
