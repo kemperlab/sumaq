@@ -39,7 +39,7 @@ def test_normalize():
 
 def test_generate_paulis_from_fermionic_ops():
     test_operators = {"0^ 1": 1.0, "1^ 0": 1.0, "0^ 0": 3.0}
-    N_sites = 1
+    N_sites = 2
     expected_coeffs = np.array([0.5 + 0.0j, 0.5 + 0.0j, 1.5 + 0.0j, -1.5 + 0.0j])
     expected_paulis = ["YY", "XX", "--", "Z-"]
     coeffs, paulis = generate_paulis_from_fermionic_ops(test_operators, N_sites)
