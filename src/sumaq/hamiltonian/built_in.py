@@ -1,5 +1,5 @@
-from operators import *
-from helper_functions import *
+from .operators import *
+from ..helper_functions import *
 
 # There's a lot of things we need to finish before these classes are ready to go. But hopefully this is a good start.
 
@@ -50,12 +50,12 @@ class Fermi_Hubbard(Operator):
         """
         return self
 
-    def as_spmatrix(self) -> NDArray:
+    def as_spmatrix(self) -> bsr_array:
         """
         This method returns the operator as a sparse matrix.
 
         Returns:
-            coo_array : The operator as a sparse matrix.
+            bsr_array : The operator as a sparse matrix.
         """
         sp_fermi_hubbard = get_sparse_from_paulis(
             *generate_paulis_from_fermionic_ops(self.fermi_hubbard_dict, self.N_sites)

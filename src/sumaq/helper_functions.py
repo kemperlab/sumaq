@@ -9,6 +9,7 @@ calculations or data processing are also included here.
 import numpy as np
 import scipy
 from numpy.typing import NDArray
+from scipy.sparse import bsr_array, find as sparse_find
 from typing import Literal
 from openfermion import jordan_wigner, FermionOperator
 from qiskit.quantum_info import SparsePauliOp
@@ -156,7 +157,7 @@ def generate_paulis_from_fermionic_ops(
     return coeffs, paulis
 
 
-def get_sparse_from_paulis(coeffs: NDArray, paulis: list[str]) -> NDArray:
+def get_sparse_from_paulis(coeffs: NDArray, paulis: list[str]) -> bsr_array:
     """
     Converts a list of Pauli operators and corresponding coefficients to a sparse matrix representation.
 
@@ -169,7 +170,7 @@ def get_sparse_from_paulis(coeffs: NDArray, paulis: list[str]) -> NDArray:
 
     Returns:
     --------
-    sparse_matrix : NDArray
+    sparse_matrix : bsr_array 
         The sparse matrix representation of the Pauli operators.
     """
     for i, pauli in enumerate(paulis):
@@ -178,7 +179,7 @@ def get_sparse_from_paulis(coeffs: NDArray, paulis: list[str]) -> NDArray:
 
     sparse_matrix = SparsePauliOp(paulis, coeffs=coeffs).to_matrix()
 
-    return sparse_matrix  # type: ignore
+    return bsr_array(sparse_matrix)  # type: ignore
 
 
 def lehmann_greens_function(
@@ -438,7 +439,9 @@ def pretty_print(vectors: NDArray | list[NDArray]) -> None:
 
 def normalize(data: NDArray) -> NDArray:
     """
-    Normalizes some array quickly such that the maximum value is 1 and the minimum value is 0.
+    Normalizes some array quickly such that the maximum value is 1 and the
+    minimum value is 0. This function is not expected to handle NaN values and
+    simply uses `np.min` and `np.max` internally.
 
     Parameters:
     -----------
@@ -450,5 +453,42 @@ def normalize(data: NDArray) -> NDArray:
     normalized_data : NDArray
         The normalized array.
     """
-    normalized_data = (data - min(data)) / (max(data) - min(data))
+    normalized_data = (data - np.min(data)) / (np.max(data) - np.min(data))
     return normalized_data
+
+
+def bsr_allclose(a: bsr_array,
+                 b: bsr_array,
+                 atol: float = 1e-8,
+                 rtol: float = 1e-5) -> bool:
+    """
+    Returns `True` if two arrays are element-wise equal within a tolerance.
+
+    The tolerance values are positive, typically very small numbers. The
+    relative difference `(rtol * abs(b))` and the absolute difference
+    `atol` are added together to compare against the absolute difference
+    between `a` and `b`.
+
+    Parameters:
+    ───────────
+    a, b : bsr_array 
+        Input arrays to compare.
+    rtol : float
+        The relative tolerance parameter.
+    atol : float
+        The absolute tolerance parameter.
+
+    Returns:
+    ────────
+    allclose : bool
+        Returns `True` if the two arrays are equal within the given tolerance;
+        `False` otherwise.
+    """
+    a = a.sorted_indices()
+    b = b.sorted_indices()
+
+    a_i, a_j, a_v = sparse_find(a)
+    b_i, b_j, b_v = sparse_find(b)
+    return (bool(np.all(a_i == b_i)) and bool(np.all(a_j == b_j))
+            and np.allclose(a_v, b_v, atol=atol, rtol=rtol))
+
