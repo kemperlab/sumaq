@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import abstractmethod, ABC
 
 from numpy.typing import NDArray
-from scipy.sparse import coo_array
+from scipy.sparse import bsr_array
 
 from ..pauli import PauliSentence
 from ..fermionic import FermionicSentence
@@ -29,7 +29,7 @@ class Operator(ABC):
         return self.as_spmatrix().todense()
 
     @abstractmethod
-    def as_spmatrix(self) -> coo_array:
+    def as_spmatrix(self) -> bsr_array:
         ...
 
     @abstractmethod

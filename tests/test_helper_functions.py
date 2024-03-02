@@ -50,14 +50,15 @@ def test_generate_paulis_from_fermionic_ops():
 def test_get_sparse_from_paulis():
     test_coeffs = np.array([1.0, 2.0, 1.0, -3.0])
     test_paulis = ["-X", "Y-", "XX", "YY"]
-    expected_sparse_matrix = np.array(
-        [
+    expected_sparse_matrix = bsr_array(
+        np.array([
             [0.0 + 0.0j, 1.0 + 0.0j, 0.0 - 2.0j, 4.0 + 0.0j],
             [1.0 + 0.0j, 0.0 + 0.0j, -2.0 + 0.0j, 0.0 - 2.0j],
             [0.0 + 2.0j, -2.0 + 0.0j, 0.0 + 0.0j, 1.0 + 0.0j],
             [4.0 + 0.0j, 0.0 + 2.0j, 1.0 + 0.0j, 0.0 + 0.0j],
-        ]
-    )
-    assert np.allclose(
-        get_sparse_from_paulis(test_coeffs, test_paulis), expected_sparse_matrix
-    )
+        ]))
+
+    print(get_sparse_from_paulis(test_coeffs, test_paulis) - expected_sparse_matrix)
+    assert bsr_allclose(get_sparse_from_paulis(test_coeffs, test_paulis),
+                        expected_sparse_matrix)
+
