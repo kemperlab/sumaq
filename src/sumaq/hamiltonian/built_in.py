@@ -1,5 +1,6 @@
-from .operators import *
-from ..helper_functions import *
+from operators import *
+from helper_functions import *
+from typing import float, list, int
 
 # There's a lot of things we need to finish before these classes are ready to go. But hopefully this is a good start.
 
@@ -55,7 +56,7 @@ class Fermi_Hubbard(Operator):
         This method returns the operator as a sparse matrix.
 
         Returns:
-            bsr_array : The operator as a sparse matrix.
+            coo_array : The operator as a sparse matrix.
         """
         sp_fermi_hubbard = get_sparse_from_paulis(
             *generate_paulis_from_fermionic_ops(self.fermi_hubbard_dict, self.N_sites)
@@ -97,22 +98,11 @@ class Impurity(Operator):
             The impurity energy.
         """
         self.N_sites = N_sites
-
+        self.V_bath = V_bath
+        self.e_bath = e_bath
+        
         if isinstance(V_bath, float):
-            self.V_bath = np.array([[V_bath]])
+            self.V_bath = np.array([V_bath]) # << this line here
         elif isinstance(V_bath, list):
             self.V_bath = np.array(V_bath)
-        else:
-            raise TypeError("Expected `V_bath` to be a float or a list of floats.")
-
-        if isinstance(e_bath, float):
-            self.e_bath = np.array([e_bath])
-        elif isinstance(e_bath, list):
-            self.e_bath = np.array(e_bath)
-        else:
-            raise TypeError("Expected `e_bath` to be a float or a list of floats.")
-
-        self.U = U
-        self.mu = mu
-        self.N_bath = N_bath
-        self.e_imp = e_imp
+    
