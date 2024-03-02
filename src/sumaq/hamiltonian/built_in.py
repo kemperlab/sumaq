@@ -98,24 +98,20 @@ class Impurity(Operator):
         """
         self.N_sites = N_sites
 
-        match type(V_bath):
-            case float:
-                self.V_bath = np.array([[V_bath]])
-            case list:
-                self.V_bath = np.array(V_bath)
-            case _:
-                raise TypeError("Expected `V_bath` to be a float or a list of floats.")
+        if isinstance(V_bath, float):
+            self.V_bath = np.array([[V_bath]])
+        elif isinstance(V_bath, list):
+            self.V_bath = np.array(V_bath)
+        else:
+            raise TypeError("Expected `V_bath` to be a float or a list of floats.")
 
-        match type(e_bath):
-            case float:
-                self.e_bath = np.array([e_bath])
-            case list:
-                self.e_bath = np.array(e_bath)
-            case _:
-                raise TypeError("Expected `e_bath` to be a float or a list of floats.")
+        if isinstance(e_bath, float):
+            self.e_bath = np.array([e_bath])
+        elif isinstance(e_bath, list):
+            self.e_bath = np.array(e_bath)
+        else:
+            raise TypeError("Expected `e_bath` to be a float or a list of floats.")
 
-        self.V_bath = V_bath
-        self.e_bath = e_bath
         self.U = U
         self.mu = mu
         self.N_bath = N_bath
