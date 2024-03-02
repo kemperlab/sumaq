@@ -1,6 +1,5 @@
-from operators import *
-from helper_functions import *
-from typing import float, list, int
+from .operators import *
+from ..helper_functions import *
 
 # There's a lot of things we need to finish before these classes are ready to go. But hopefully this is a good start.
 
