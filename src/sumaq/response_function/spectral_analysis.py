@@ -29,7 +29,8 @@ class SignalAnalysis:
                 )
 
     def fourier_transform(self) -> tuple[NDArray, NDArray]:
-        ...
+        """This function is currently in development."""
+        raise NotImplementedError()
 
     def locate_peaks(
         self, min_height: float = 0.1, min_threshold: float = 1e2
